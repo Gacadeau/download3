@@ -17,10 +17,12 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.endsWith('.mp4')) {
     event.respondWith(
       caches.match(event.request).then((response) => {
-        const fetched = fetch(event.request);
-        console.log(`Video fetched: ${event.request.url}`);
-        return response || fetched;
+        return response || fetch(event.request).then((fetchedResponse) => {
+          console.log(`Video fetched: ${event.request.url}`);
+          return fetchedResponse;
+        });
       })
     );
   }
 });
+

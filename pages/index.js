@@ -9,10 +9,13 @@ import CachedVideos from './cached-videos';
 import { useRouter } from 'next/router';
 
 const Home = () => {
-  const [isOnline, setIsOnline] = useState(null); // Initialisez avec une valeur neutre
+  const [isOnline, setIsOnline] = useState(true);
+
   const router = useRouter();
 
   useEffect(() => {
+    setIsOnline(navigator.onLine);
+
     const handleOnlineStatusChange = () => {
       setIsOnline(navigator.onLine);
     };
@@ -50,12 +53,13 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (isOnline === null) return; // Attendre que l'état soit défini avant de rendre
-
-    if (!isOnline) {
+    if (isOnline === null) return;
+  
+    if (!isOnline && window.location.pathname === '/') {
       router.push('/cached-videos');
     }
   }, [isOnline, router]);
+  
 
   return (
     <div className="container mx-auto mt-8 text-center">

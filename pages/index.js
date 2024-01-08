@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import VideoPlayer from './components/VideoPlayer';
 import VideoDownloadButton from './components/VideoDownloadButton';
-import CachedVideos from './cached-videos'; // Importer le composant de vidéos mises en cache
+import CachedVideos from './cached-videos';
 import { useRouter } from 'next/router';
 
 const Home = () => {
@@ -11,7 +11,6 @@ const Home = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Vérifier la connectivité réseau
     const handleOnlineStatusChange = () => {
       setIsOnline(navigator.onLine);
     };
@@ -19,13 +18,23 @@ const Home = () => {
     window.addEventListener('online', handleOnlineStatusChange);
     window.addEventListener('offline', handleOnlineStatusChange);
 
+    // Vérifier si le service worker est enregistré
+    navigator.serviceWorker.getRegistration().then((registration) => {
+      if (!registration) {
+        // Enregistrer le service worker s'il n'est pas déjà enregistré
+        navigator.serviceWorker.register('/service-worker.js').then(() => {
+          console.log('Service Worker enregistré avec succès.');
+        });
+      }
+    });
+
     return () => {
       window.removeEventListener('online', handleOnlineStatusChange);
       window.removeEventListener('offline', handleOnlineStatusChange);
     };
   }, []);
 
-  const videoUrl = '/dance.mp4'; // Chemin vers votre vidéo dans le dossier "public"
+  const videoUrl = '/dance.mp4';
 
   const handleDownloadClick = async () => {
     try {
@@ -33,7 +42,6 @@ const Home = () => {
       const response = await fetch(videoUrl);
       const blob = await response.blob();
 
-      // Envoyer un message au service worker pour stocker la vidéo en cache
       registration.active.postMessage({
         type: 'CACHE_VIDEO',
         url: videoUrl,
@@ -48,20 +56,20 @@ const Home = () => {
 
   useEffect(() => {
     if (!isOnline) {
-      // Rediriger vers la page des vidéos en cache si l'utilisateur est hors ligne
+      console.log('Redirection vers la page de vidéos mises en cache');
       router.push('/cached-videos');
     }
   }, [isOnline]);
 
   return (
     <div className="container mx-auto mt-8 text-center">
-      {isOnline ? ( // Si la connexion est disponible, afficher la page normale
+      {isOnline ? (
         <div>
           <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
           <VideoPlayer videoUrl={videoUrl} />
           <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
         </div>
-      ) : ( // Si la connexion n'est pas disponible, rediriger vers la page de vidéos mises en cache
+      ) : (
         <CachedVideos />
       )}
     </div>

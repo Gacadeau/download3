@@ -1,5 +1,7 @@
 // pages/index.js
+//https://download2-7r9q.vercel.app/
 
+// pages/index.js
 import { useEffect, useState } from 'react';
 import VideoPlayer from './components/VideoPlayer';
 import VideoDownloadButton from './components/VideoDownloadButton';
@@ -7,7 +9,7 @@ import CachedVideos from './cached-videos';
 import { useRouter } from 'next/router';
 
 const Home = () => {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(null); // Initialisez avec une valeur neutre
   const router = useRouter();
 
   useEffect(() => {
@@ -18,15 +20,8 @@ const Home = () => {
     window.addEventListener('online', handleOnlineStatusChange);
     window.addEventListener('offline', handleOnlineStatusChange);
 
-    // Vérifier si le service worker est enregistré
-    navigator.serviceWorker.getRegistration().then((registration) => {
-      if (!registration) {
-        // Enregistrer le service worker s'il n'est pas déjà enregistré
-        navigator.serviceWorker.register('/service-worker.js').then(() => {
-          console.log('Service Worker enregistré avec succès.');
-        });
-      }
-    });
+    // Vérifiez la connectivité réseau lors du rendu côté serveur
+    setIsOnline(navigator.onLine);
 
     return () => {
       window.removeEventListener('online', handleOnlineStatusChange);
@@ -55,22 +50,26 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (isOnline === null) return; // Attendre que l'état soit défini avant de rendre
+
     if (!isOnline) {
-      console.log('Redirection vers la page de vidéos mises en cache');
       router.push('/cached-videos');
     }
-  }, [isOnline]);
+  }, [isOnline, router]);
 
   return (
     <div className="container mx-auto mt-8 text-center">
-      {isOnline ? (
-        <div>
-          <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
-          <VideoPlayer videoUrl={videoUrl} />
-          <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
-        </div>
-      ) : (
-        <CachedVideos />
+      {isOnline !== null && (
+        // Attendre que l'état soit défini avant de rendre le contenu
+        isOnline ? (
+          <div>
+            <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
+            <VideoPlayer videoUrl={videoUrl} />
+            <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
+          </div>
+        ) : (
+          <CachedVideos />
+        )
       )}
     </div>
   );

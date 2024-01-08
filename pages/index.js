@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import VideoPlayer from './components/VideoPlayer';
 import VideoDownloadButton from './components/VideoDownloadButton';
+import CachedVideos from './cached-videos'; // Importer le composant de vidéos mises en cache
 import { useRouter } from 'next/router';
 
 const Home = () => {
@@ -54,9 +55,15 @@ const Home = () => {
 
   return (
     <div className="container mx-auto mt-8 text-center">
-      <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
-      <VideoPlayer videoUrl={videoUrl} />
-      <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
+      {isOnline ? ( // Si la connexion est disponible, afficher la page normale
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
+          <VideoPlayer videoUrl={videoUrl} />
+          <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
+        </div>
+      ) : ( // Si la connexion n'est pas disponible, rediriger vers la page de vidéos mises en cache
+        <CachedVideos />
+      )}
     </div>
   );
 };

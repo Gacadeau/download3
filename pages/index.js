@@ -10,22 +10,22 @@ import { useRouter } from 'next/router';
 
 const Home = () => {
   const [isOnline, setIsOnline] = useState(true);
-
   const router = useRouter();
 
   useEffect(() => {
-    setIsOnline(navigator.onLine);
-
+    // Fonction pour mettre à jour l'état en fonction de la connectivité
     const handleOnlineStatusChange = () => {
       setIsOnline(navigator.onLine);
     };
 
+    // Ajouter des écouteurs d'événements pour la connectivité en ligne/hors ligne
     window.addEventListener('online', handleOnlineStatusChange);
     window.addEventListener('offline', handleOnlineStatusChange);
 
-    // Vérifiez la connectivité réseau lors du rendu côté serveur
+    // Vérifier la connectivité réseau lors du rendu côté serveur
     setIsOnline(navigator.onLine);
 
+    // Supprimer les écouteurs d'événements lors du démontage du composant
     return () => {
       window.removeEventListener('online', handleOnlineStatusChange);
       window.removeEventListener('offline', handleOnlineStatusChange);
@@ -53,27 +53,24 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (isOnline === null) return;
-  
-    if (!isOnline && window.location.pathname === '/') {
+    // Rediriger vers la page des vidéos en cache si l'utilisateur est hors ligne
+    if (!isOnline && router.pathname === '/') {
       router.push('/cached-videos');
     }
   }, [isOnline, router]);
-  
 
   return (
     <div className="container mx-auto mt-8 text-center">
-      {isOnline !== null && (
-        // Attendre que l'état soit défini avant de rendre le contenu
-        isOnline ? (
-          <div>
-            <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
-            <VideoPlayer videoUrl={videoUrl} />
-            <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
-          </div>
-        ) : (
-          <CachedVideos />
-        )
+      {isOnline ? (
+        // Afficher la page normale si la connexion est disponible
+        <div>
+          <h1 className="text-3xl font-bold mb-4">Bienvenue sur la page d'accueil</h1>
+          <VideoPlayer videoUrl={videoUrl} />
+          <VideoDownloadButton videoUrl={videoUrl} onClick={handleDownloadClick} />
+        </div>
+      ) : (
+        // Rediriger vers la page des vidéos en cache si l'utilisateur est hors ligne
+        <CachedVideos />
       )}
     </div>
   );

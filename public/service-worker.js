@@ -1,5 +1,14 @@
 // public/service-worker.js
 
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('downloaded-videos-cache').then((cache) => {
+      return cache.addAll(['/cached-videos']);
+    })
+  );
+});
+
+
 self.addEventListener('message', (event) => {
   console.log('Message received:', event.data);
 
